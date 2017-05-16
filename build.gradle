@@ -18,26 +18,30 @@ dependencies {
 
 task downloadFile {
     doLast {
-        def filename = 'CPP14.g4'
+        def grammarUrl = 'https://raw.githubusercontent.com/antlr/grammars-v4/master/cpp/'
+        def testFileUrl = 'https://raw.githubusercontent.com/antlr/grammars-v4/master/cpp/examples/helloworld.cpp'
+        def fileName = 'CPP14.g4'
+        def testFileName = 'test.cpp'
         download {
-            src 'https://raw.githubusercontent.com/antlr/grammars-v4/master/cpp/' + filename
-            dest 'src/main/antlr/' + filename
+            src grammarUrl + fileName
+            dest 'src/main/antlr/' + fileName
         }
         download {
-            src 'https://raw.githubusercontent.com/antlr/grammars-v4/master/cpp/examples/helloworld.cpp'
-            dest 'src/test/resources/test.cpp'
+            src testFileUrl
+            dest 'src/test/resources/' + testFileName
         }
     }
 }
 
 task buildParser {
     doLast {
-        def header = 'package cpp;\n\n'
+        def packageName = 'cpp'
+        def header = 'package ' + packageName + ';\n\n'
         copy {
             from 'build/generated-src/antlr/main'
-            into 'src/main/java/cpp'
+            into 'src/main/java/' + packageName
         }
-        new File('src/main/java/cpp').eachFileMatch(FileType.FILES, ~/CPP14[a-zA-Z]+.java/) {
+        new File('src/main/java/' + packageName).eachFileMatch(FileType.FILES, ~/CPP14[a-zA-Z]+.java/) {
             def text = header + it.text
             it.write(text)
         }
