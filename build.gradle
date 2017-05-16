@@ -1,0 +1,47 @@
+import groovy.io.FileType
+
+plugins {
+    id 'java'
+    id 'antlr'
+    id 'eclipse'
+    id 'de.undercouch.download' version '3.2.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    antlr 'org.antlr:antlr4:4.5'
+    testCompile 'junit:junit:4.11'
+}
+
+task downloadFile {
+    doLast {
+        def filename = 'CPP14.g4'
+        download {
+            src 'https://raw.githubusercontent.com/antlr/grammars-v4/master/cpp/' + filename
+            dest 'src/main/antlr/' + filename
+        }
+        download {
+            src 'https://raw.githubusercontent.com/antlr/grammars-v4/master/cpp/examples/helloworld.cpp'
+            dest 'src/test/resources/test.cpp'
+        }
+    }
+}
+
+task buildParser {
+    doLast {
+        def header = 'package cpp;\n\n'
+        copy {
+            from 'build/generated-src/antlr/main'
+            into 'src/main/java/cpp'
+        }
+        new File('src/main/java/cpp').eachFileMatch(FileType.FILES, ~/CPP14[a-zA-Z]+.java/) {
+            def text = header + it.text
+            it.write(text)
+        }
+    }
+}
+
+buildParser.dependsOn downloadFile, generateGrammarSource
